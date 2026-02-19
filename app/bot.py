@@ -117,6 +117,18 @@ def run() -> None:
         try:
             with MailBox(IMAP_HOST, IMAP_PORT).login(EMAIL_USER, EMAIL_PASS, "INBOX") as mb:
                 log.info("IMAP connected")
+                # Catch-up fetch: grab any emails that arrived during reconnect gap
+                criteria = AND(uid=f"{last_uid + 1}:*")
+                for msg in mb.fetch(criteria, mark_seen=False):
+                    uid = int(msg.uid)
+                    if uid <= last_uid:
+                        continue
+                    log.info("Catch-up email UID=%d from=%s subj=%s", uid, msg.from_, msg.subject)
+                    tg_send(format_email(msg.from_, msg.subject, msg.text))
+                    if uid > last_uid:
+                        last_uid = uid
+                        write_last_uid(last_uid)
+
                 while conn_age < MAX_CONN_TIME:
                     try:
                         responses = mb.idle.wait(timeout=IDLE_TIMEOUT)
