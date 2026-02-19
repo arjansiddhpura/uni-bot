@@ -1,0 +1,16 @@
+services:
+  uni-bot:
+    build: .
+    container_name: uni-bot
+    hostname: uni-bot-client
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file: .env
+    volumes:
+      - uid-state:/data
+
+volumes:
+  uid-state:
