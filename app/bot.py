@@ -43,18 +43,23 @@ log = logging.getLogger("uni-bot")
 # ---------------------------------------------------------------------------
 
 def tg_send(text: str) -> None:
-    """Send a message to Telegram. Silently truncate on excessive length."""
+    """Send a message to Telegram with retry on transient errors."""
     text = text[:4096]
-    try:
-        r = requests.post(
-            f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-            json={"chat_id": TG_CHAT, "text": text, "parse_mode": "HTML"},
-            timeout=15,
-        )
-        if not r.ok:
+    for attempt in range(1, 4):  # up to 3 attempts
+        try:
+            r = requests.post(
+                f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
+                json={"chat_id": TG_CHAT, "text": text, "parse_mode": "HTML"},
+                timeout=15,
+            )
+            if r.ok:
+                return
             log.warning("Telegram API %s: %s", r.status_code, r.text[:200])
-    except Exception as e:
-        log.error("Telegram send failed: %s", e)
+        except Exception as e:
+            log.warning("Telegram send failed (attempt %d/3): %s", attempt, e)
+        if attempt < 3:
+            time.sleep(2 ** attempt)  # 2s, 4s
+    log.error("Telegram send gave up after 3 attempts")
 
 
 def read_last_uid() -> int:
@@ -108,7 +113,7 @@ def run() -> None:
     if last_uid == 0:
         last_uid = seed_uid()
 
-    tg_send("✅ <b>Uni-Bot started</b>\nListening for new emails …")
+    tg_send("<b>Uni-Bot started</b>\nListening for new emails…")
     log.info("Bot started — last UID = %d", last_uid)
 
     while True:
