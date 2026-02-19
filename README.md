@@ -111,7 +111,7 @@ And you'll receive a Telegram message: **✅ Uni-Bot started — Listening for n
 ## How It Works (Under the Hood)
 
 ```
-┌──────────────┐     VPN tunnel      ┌────────────────────┐
+┌──────────────┐     VPN tunnel       ┌────────────────────┐
 │  Your VPS    │◄────────────────────►│  Uni Heidelberg    │
 │              │   (openconnect)      │  VPN Gateway       │
 │  ┌────────┐  │                      └────────────────────┘
