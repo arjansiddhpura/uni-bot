@@ -113,8 +113,8 @@ def run() -> None:
     if last_uid == 0:
         last_uid = seed_uid()
 
-    tg_send("<b>Uni-Bot started</b>\nListening for new emails…")
     log.info("Bot started — last UID = %d", last_uid)
+    startup_notified = False
 
     while True:
         conn_start = time.monotonic()
@@ -122,6 +122,9 @@ def run() -> None:
         try:
             with MailBox(IMAP_HOST, IMAP_PORT).login(EMAIL_USER, EMAIL_PASS, "INBOX") as mb:
                 log.info("IMAP connected")
+                if not startup_notified:
+                    tg_send("\u2705 <b>Uni-Bot started</b>\nListening for new emails \u2026")
+                    startup_notified = True
                 # Catch-up fetch: grab any emails that arrived during reconnect gap
                 criteria = AND(uid=f"{last_uid + 1}:*")
                 for msg in mb.fetch(criteria, mark_seen=False):
