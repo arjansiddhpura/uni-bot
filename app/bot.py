@@ -123,7 +123,7 @@ def run() -> None:
             with MailBox(IMAP_HOST, IMAP_PORT).login(EMAIL_USER, EMAIL_PASS, "INBOX") as mb:
                 log.info("IMAP connected")
                 if not startup_notified:
-                    tg_send("\u2705 <b>Uni-Bot started</b>\nListening for new emails \u2026")
+                    tg_send("<b>Uni-Bot started</b>\nListening for new emails\u2026")
                     startup_notified = True
                 # Catch-up fetch: grab any emails that arrived during reconnect gap
                 criteria = AND(uid=f"{last_uid + 1}:*")
